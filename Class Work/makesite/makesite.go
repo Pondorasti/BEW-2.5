@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"html/template"
 	"io/ioutil"
 	"os"
@@ -13,8 +12,8 @@ type Article struct {
 	Paragraphs []string
 }
 
-func main() {
-	fileContents, err := ioutil.ReadFile("data/first-post.txt")
+func parseFile(filePath string) Article {
+	fileContents, err := ioutil.ReadFile(filePath)
 	if err != nil {
 		panic(err)
 	}
@@ -28,15 +27,18 @@ func main() {
 		}
 	}
 
-	templateContents, err := ioutil.ReadFile("template.tmpl")
-	if err != nil {
-		panic(err)
-	}
+	return article
+}
 
-	t := template.Must(template.New("template.tmpl").Parse(string(templateContents)))
-	err = t.Execute(os.Stdout, article)
+func generateHtml(article Article) {
+	t := template.Must(template.New("template.tmpl").ParseFiles("template.tmpl"))
+	err := t.Execute(os.Stdout, article)
 	if err != nil {
-		fmt.Println("hello")
 		panic(err)
 	}
+}
+
+func main() {
+	article := parseFile("data/first-post.txt")
+	generateHtml(article)
 }
