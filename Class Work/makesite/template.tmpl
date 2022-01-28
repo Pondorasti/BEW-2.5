@@ -2,8 +2,19 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <title>Untitled Custom SSG</title>
+  <title>Glogs</title>
 </head>
 <body>
+  <article>
+    <h1>{{ .Title }}</h1>
+    
+    {{ with .Paragraphs }}
+        {{ range . }}
+          <p>
+            {{ . }}
+          </p>
+        {{ end }}
+    {{ end }}
+  </article>
 </body>
 </html>
