@@ -32,7 +32,13 @@ func parseFile(filePath string) Article {
 
 func generateHtml(article Article) {
 	t := template.Must(template.New("template.tmpl").ParseFiles("template.tmpl"))
-	err := t.Execute(os.Stdout, article)
+
+	output, err := os.Create("dist/output.html")
+	if err != nil {
+		panic(err)
+	}
+
+	err = t.Execute(output, article)
 	if err != nil {
 		panic(err)
 	}
