@@ -2,7 +2,6 @@ package main
 
 import (
 	"flag"
-	"fmt"
 	"html/template"
 	"io/ioutil"
 	"os"
@@ -47,17 +46,36 @@ func generateHtml(article Article, fileName string) {
 }
 
 func main() {
-	filePath := flag.String("file", "data/first-post.txt", "The path to the file to parse")
+	filePath := flag.String("file", "", "Parse file from the given path.")
+	dirPath := flag.String("dir", "", "Parse all files from the given directory.")
 	flag.Parse()
 
-	splitPath := strings.Split(*filePath, "/")
-	fileName := splitPath[len(splitPath)-1]
-	splitExtension := strings.Split(fileName, ".")
-	fileName = splitExtension[0]
+	if *filePath != "" {
+		splitPath := strings.Split(*filePath, "/")
+		fileName := splitPath[len(splitPath)-1]
+		fileName = strings.Split(fileName, ".")[0]
 
-	fmt.Println(*filePath)
-	fmt.Println(fileName)
+		article := parseFile(*filePath)
+		generateHtml(article, fileName)
+	}
 
-	article := parseFile(*filePath)
-	generateHtml(article, fileName)
+	if *dirPath != "" {
+		files, err := ioutil.ReadDir(*dirPath)
+		if err != nil {
+			panic(err)
+		}
+
+		for _, file := range files {
+			if strings.HasSuffix(file.Name(), ".txt") {
+				fileName := strings.Split((file.Name()), ".")[0]
+
+				article := parseFile(*dirPath + "/" + file.Name())
+				generateHtml(article, fileName)
+			}
+		}
+	}
 }
+
+// Example Usage
+// go run makesite -file=data/first-post.txt
+// go run makesite -dir=data
