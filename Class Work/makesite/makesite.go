@@ -1,6 +1,8 @@
 package main
 
 import (
+	"flag"
+	"fmt"
 	"html/template"
 	"io/ioutil"
 	"os"
@@ -30,10 +32,10 @@ func parseFile(filePath string) Article {
 	return article
 }
 
-func generateHtml(article Article) {
+func generateHtml(article Article, fileName string) {
 	t := template.Must(template.New("template.tmpl").ParseFiles("template.tmpl"))
 
-	output, err := os.Create("dist/output.html")
+	output, err := os.Create("dist/" + fileName + ".html")
 	if err != nil {
 		panic(err)
 	}
@@ -45,6 +47,17 @@ func generateHtml(article Article) {
 }
 
 func main() {
-	article := parseFile("data/first-post.txt")
-	generateHtml(article)
+	filePath := flag.String("file", "data/first-post.txt", "The path to the file to parse")
+	flag.Parse()
+
+	splitPath := strings.Split(*filePath, "/")
+	fileName := splitPath[len(splitPath)-1]
+	splitExtension := strings.Split(fileName, ".")
+	fileName = splitExtension[0]
+
+	fmt.Println(*filePath)
+	fmt.Println(fileName)
+
+	article := parseFile(*filePath)
+	generateHtml(article, fileName)
 }
