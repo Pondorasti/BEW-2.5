@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/fatih/color"
 )
@@ -49,6 +50,8 @@ func generateHtml(article Article, fileName string) {
 }
 
 func main() {
+	start := time.Now()
+
 	filePath := flag.String("file", "", "Parse file from the given path.")
 	dirPath := flag.String("dir", "", "Parse all files from the given directory.")
 	flag.Parse()
@@ -83,10 +86,13 @@ func main() {
 		}
 	}
 
+	elapsed := time.Since(start)
+
 	color.Set(color.FgHiGreen, color.Bold)
 	fmt.Print("Success!")
 	color.Unset()
-	fmt.Println(" Generated " + fmt.Sprintf("%d", filesGenerated) + " pages.")
+	fmt.Println(" Generated " + fmt.Sprintf("%d", filesGenerated) + " pages in " + fmt.Sprintf("%.3f", elapsed.Seconds()) + " seconds.")
+
 }
 
 // Example Usage
