@@ -35,7 +35,7 @@ func parseFile(filePath string) Article {
 	return article
 }
 
-func generateHtml(article Article, fileName string) {
+func generateHtml(article Article, fileName string) int64 {
 	t := template.Must(template.New("template.tmpl").ParseFiles("template.tmpl"))
 
 	output, err := os.Create("dist/" + fileName + ".html")
@@ -47,10 +47,18 @@ func generateHtml(article Article, fileName string) {
 	if err != nil {
 		panic(err)
 	}
+
+	info, err := os.Stat("dist/" + fileName + ".html")
+	if err != nil {
+		panic(err)
+	}
+
+	return info.Size()
 }
 
 func main() {
 	start := time.Now()
+	var generatedSize int64 = 0
 
 	filePath := flag.String("file", "", "Parse file from the given path.")
 	dirPath := flag.String("dir", "", "Parse all files from the given directory.")
@@ -63,7 +71,7 @@ func main() {
 		fileName = strings.Split(fileName, ".")[0]
 
 		article := parseFile(*filePath)
-		generateHtml(article, fileName)
+		generatedSize += generateHtml(article, fileName)
 
 		filesGenerated += 1
 	}
@@ -79,7 +87,7 @@ func main() {
 				fileName := strings.Split((file.Name()), ".")[0]
 
 				article := parseFile(*dirPath + "/" + file.Name())
-				generateHtml(article, fileName)
+				generatedSize += generateHtml(article, fileName)
 
 				filesGenerated += 1
 			}
@@ -87,12 +95,12 @@ func main() {
 	}
 
 	elapsed := time.Since(start)
+	kilobytes := float64(generatedSize) / 1024
 
 	color.Set(color.FgHiGreen, color.Bold)
 	fmt.Print("Success!")
 	color.Unset()
-	fmt.Println(" Generated " + fmt.Sprintf("%d", filesGenerated) + " pages in " + fmt.Sprintf("%.3f", elapsed.Seconds()) + " seconds.")
-
+	fmt.Println(" Generated " + fmt.Sprintf("%d", filesGenerated) + " pages " + "(" + fmt.Sprintf("%.2f", kilobytes) + "kB total)" + " in " + fmt.Sprintf("%.3f", elapsed.Seconds()) + " seconds.")
 }
 
 // Example Usage
