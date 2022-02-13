@@ -2,10 +2,13 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"html/template"
 	"io/ioutil"
 	"os"
 	"strings"
+
+	"github.com/fatih/color"
 )
 
 type Article struct {
@@ -49,6 +52,7 @@ func main() {
 	filePath := flag.String("file", "", "Parse file from the given path.")
 	dirPath := flag.String("dir", "", "Parse all files from the given directory.")
 	flag.Parse()
+	filesGenerated := 0
 
 	if *filePath != "" {
 		splitPath := strings.Split(*filePath, "/")
@@ -57,6 +61,8 @@ func main() {
 
 		article := parseFile(*filePath)
 		generateHtml(article, fileName)
+
+		filesGenerated += 1
 	}
 
 	if *dirPath != "" {
@@ -71,9 +77,16 @@ func main() {
 
 				article := parseFile(*dirPath + "/" + file.Name())
 				generateHtml(article, fileName)
+
+				filesGenerated += 1
 			}
 		}
 	}
+
+	color.Set(color.FgHiGreen, color.Bold)
+	fmt.Print("Success!")
+	color.Unset()
+	fmt.Println(" Generated " + fmt.Sprintf("%d", filesGenerated) + " pages.")
 }
 
 // Example Usage
