@@ -9,12 +9,14 @@ import (
 	"strings"
 	"time"
 
+	readingtime "github.com/begmaroman/reading-time"
 	"github.com/fatih/color"
 )
 
 type Article struct {
-	Title      string
-	Paragraphs []string
+	Title       string
+	Paragraphs  []string
+	ReadingTime string
 }
 
 func parseFile(filePath string) Article {
@@ -24,6 +26,8 @@ func parseFile(filePath string) Article {
 	}
 
 	article := Article{}
+	article.ReadingTime = readingtime.Estimate(string(fileContents)).Text
+
 	for index, line := range strings.Split(string(fileContents), "\n") {
 		if index == 0 {
 			article.Title = line
@@ -101,6 +105,8 @@ func main() {
 	fmt.Print("Success!")
 	color.Unset()
 	fmt.Println(" Generated " + fmt.Sprintf("%d", filesGenerated) + " pages " + "(" + fmt.Sprintf("%.2f", kilobytes) + "kB total)" + " in " + fmt.Sprintf("%.3f", elapsed.Seconds()) + " seconds.")
+
+	fmt.Println(readingtime.Estimate("hello workd").Text)
 }
 
 // Example Usage

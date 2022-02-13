@@ -87,12 +87,12 @@ If you get stuck on any step, be sure to print the output to `stdout`!
 
 #### v1.2 Requirements
 
-- [ ] Initialize Go modules in your project.
-- [ ] Add any third party library to your project to enhance it's functionality. Some ideas you might consider include **_(CHOOSE ONLY ONE)_**:
+- [x] Initialize Go modules in your project.
+- [x] Add any third party library to your project to enhance it's functionality. Some ideas you might consider include **_(CHOOSE ONLY ONE)_**:
     - [ ] Translating page content using Google Translate.
     - [ ] Parse Markdown (`.md`) files and transform them into HTML. `#` through `######` should translate to `<h1>` through `<h6>` elements.
-    - [ ] **_FILL IN THE BLANK_**: `I will use the __________________________________ library. The documentation is located at __________________________________. My goal is to use it to __________________________________.`
-- [ ] **Add, commit, and push to GitHub**.
+    - [x] **_FILL IN THE BLANK_**: I will use the `github.com/begmaroman/reading-time` library. The documentation is located at https://github.com/begmaroman/reading-time. My goal is to use it to calculate the amount of time it takes to read each blog post and render this information as part of the template.
+- [x] **Add, commit, and push to GitHub**.
 
 ## Resources
 
