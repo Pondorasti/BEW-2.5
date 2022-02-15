@@ -1,15 +1,17 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
+	"io/ioutil"
 
 	"github.com/gocolly/colly"
 )
 
 type Jobs struct {
-	Title     string
-	Link      string
-	timestamp string
+	Title     string `json:"title"`
+	Link      string `json:"link"`
+	Timestamp string `json:"timestamp"`
 }
 
 func normalizeLink(link string) string {
@@ -21,7 +23,7 @@ func normalizeLink(link string) string {
 }
 
 func main() {
-	data := []Jobs{}
+	jobs := []Jobs{}
 	timestampIndex := 0
 	c := colly.NewCollector()
 
@@ -29,19 +31,17 @@ func main() {
 	c.OnHTML("tr.athing > td.title > a.titlelink", func(e *colly.HTMLElement) {
 		link := e.Attr("href")
 
-		data = append(data, Jobs{
+		jobs = append(jobs, Jobs{
 			Title: e.Text,
 			Link:  normalizeLink(link),
 		})
-		fmt.Printf("Link found: %q -> %s\n", e.Text, link)
 	})
 
 	// Job Timestamp
 	c.OnHTML("tr > td.subtext > span.age", func(e *colly.HTMLElement) {
 		timestamp := e.Attr("title")
-		fmt.Println(timestamp)
 
-		data[timestampIndex].timestamp = timestamp
+		jobs[timestampIndex].Timestamp = timestamp
 		timestampIndex++
 	})
 
@@ -51,6 +51,6 @@ func main() {
 
 	c.Visit("https://news.ycombinator.com/jobs")
 
-	fmt.Println("\n")
-	fmt.Println(data[0])
+	jsonData, _ := json.MarshalIndent(jobs, "", " ")
+	ioutil.WriteFile("jobs.json", jsonData, 0644)
 }
