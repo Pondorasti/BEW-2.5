@@ -4,10 +4,17 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"os"
+	"time"
 
+	"github.com/fatih/color"
 	"github.com/gocolly/colly"
 )
 
+type Data struct {
+	Cursor string `json:"cursor"`
+	Jobs   []Jobs `json:"jobs"`
+}
 type Jobs struct {
 	Title     string `json:"title"`
 	Link      string `json:"link"`
@@ -15,14 +22,36 @@ type Jobs struct {
 }
 
 func normalizeLink(link string) string {
-	if link[0] == 'i' { // item?id=
+	if link[0] != 'h' {
 		link = "https://news.ycombinator.com/" + link
 	}
 
 	return link
 }
 
+func exportData(jobs []Jobs, cursor string, db Data) {
+	fmt.Println("Exporting data...")
+	db.Cursor = cursor
+	db.Jobs = append(db.Jobs, jobs...)
+
+	jsonData, _ := json.MarshalIndent(db, "", " ")
+	ioutil.WriteFile("jobs.json", jsonData, 0644)
+
+	color.Set(color.FgHiGreen)
+	fmt.Print("Export complete. ")
+	color.Unset()
+
+	info, _ := os.Stat("jobs.json")
+	kilobytes := float64(info.Size()) / 1024
+	fmt.Println(fmt.Sprintf("(%.2f", kilobytes), "KB)")
+}
+
 func main() {
+	byteValue, _ := ioutil.ReadFile("jobs.json")
+	var db Data
+	json.Unmarshal(byteValue, &db)
+
+	cursor := ""
 	jobs := []Jobs{}
 	timestampIndex := 0
 	c := colly.NewCollector()
@@ -45,12 +74,27 @@ func main() {
 		timestampIndex++
 	})
 
-	c.OnRequest(func(r *colly.Request) {
-		fmt.Println("Visiting", r.URL.String())
+	// Cursor
+	c.OnHTML("tr > td.title > a.morelink", func(e *colly.HTMLElement) {
+		cursor = normalizeLink(e.Attr("href"))
+
+		exportData(jobs, cursor, db)
+
+		time.Sleep(time.Second)
+		e.Request.Visit(cursor)
 	})
 
-	c.Visit("https://news.ycombinator.com/jobs")
+	c.OnRequest(func(r *colly.Request) {
+		fmt.Println("Visiting:", r.URL.String())
+	})
 
-	jsonData, _ := json.MarshalIndent(jobs, "", " ")
-	ioutil.WriteFile("jobs.json", jsonData, 0644)
+	c.OnError(func(_ *colly.Response, err error) {
+		fmt.Println("Something went wrong:", err)
+	})
+
+	c.OnScraped(func(r *colly.Response) {
+		fmt.Println("Finished", r.Request.URL)
+	})
+
+	c.Visit(db.Cursor)
 }
