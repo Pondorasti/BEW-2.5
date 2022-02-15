@@ -6,25 +6,51 @@ import (
 	"github.com/gocolly/colly"
 )
 
-// main() contains code adapted from example found in Colly's docs:
-// http://go-colly.org/docs/examples/basic/
+type Jobs struct {
+	Title     string
+	Link      string
+	timestamp string
+}
+
+func normalizeLink(link string) string {
+	if link[0] == 'i' { // item?id=
+		link = "https://news.ycombinator.com/" + link
+	}
+
+	return link
+}
+
 func main() {
-	// Instantiate default collector
+	data := []Jobs{}
+	timestampIndex := 0
 	c := colly.NewCollector()
 
-	// On every a element which has href attribute call callback
-	c.OnHTML("a[href]", func(e *colly.HTMLElement) {
-                link := e.Attr("href")
+	// Job Details
+	c.OnHTML("tr.athing > td.title > a.titlelink", func(e *colly.HTMLElement) {
+		link := e.Attr("href")
 
-		// Print link
-                fmt.Printf("Link found: %q -> %s\n", e.Text, link)
+		data = append(data, Jobs{
+			Title: e.Text,
+			Link:  normalizeLink(link),
+		})
+		fmt.Printf("Link found: %q -> %s\n", e.Text, link)
 	})
 
-	// Before making a request print "Visiting ..."
+	// Job Timestamp
+	c.OnHTML("tr > td.subtext > span.age", func(e *colly.HTMLElement) {
+		timestamp := e.Attr("title")
+		fmt.Println(timestamp)
+
+		data[timestampIndex].timestamp = timestamp
+		timestampIndex++
+	})
+
 	c.OnRequest(func(r *colly.Request) {
 		fmt.Println("Visiting", r.URL.String())
 	})
 
-	// Start scraping on https://hackerspaces.org
-	c.Visit("https://hackerspaces.org/")
+	c.Visit("https://news.ycombinator.com/jobs")
+
+	fmt.Println("\n")
+	fmt.Println(data[0])
 }
