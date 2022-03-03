@@ -3,8 +3,12 @@ package main
 import (
 	"fmt"
 	"log"
+	"math"
 	"os"
 	"path/filepath"
+	"sort"
+
+	"github.com/fatih/color"
 )
 
 type File struct {
@@ -56,7 +60,26 @@ func main() {
 		log.Println(err)
 	}
 
-	for _, file := range files {
-		fmt.Println(file.Path, displaySize(file.Size))
+	sort.SliceStable(files, func(i, j int) bool {
+		return files[i].Size < files[j].Size
+	})
+
+	totalSize := int64(0)
+	for index, file := range files {
+		totalSize += file.Size
+		normalizedIndex := len(files) - index
+		step := math.Min(33, float64(len(files))/3)
+		if normalizedIndex <= 100 {
+			fileName := filepath.Base(file.Path)
+			output := "• " + fileName + " " + displaySize(file.Size)
+			if float64(normalizedIndex)/step < 1 {
+				color.Red(output)
+			} else if float64(normalizedIndex)/step < 2 {
+				color.Yellow(output)
+			} else {
+				color.Green(output)
+			}
+		}
 	}
+	fmt.Println("\nTotal size: ", displaySize(totalSize))
 }
