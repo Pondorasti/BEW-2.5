@@ -80,7 +80,7 @@ func main() {
 
 		exportData(jobs, cursor, db)
 
-		time.Sleep(5 * time.Second)
+		time.Sleep(60 * time.Second)
 		e.Request.Visit(cursor)
 	})
 
