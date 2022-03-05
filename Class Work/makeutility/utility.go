@@ -44,6 +44,15 @@ func displaySize(size int64) string {
 	return fmt.Sprintf("%.2f GB", float64(size)/1024/1024/1024)
 }
 
+func LookUp(path string) []File {
+	err := filepath.Walk(path, handleFile)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	return files
+}
+
 func main() {
 	if len(os.Args) > 2 {
 		log.Fatal("\nUsage: go run utility.go <directory>\n<directory>: optional, default value is current directory")
@@ -55,10 +64,7 @@ func main() {
 
 	fmt.Println("Listing files in ", root)
 	fmt.Println()
-	err := filepath.Walk(root, handleFile)
-	if err != nil {
-		log.Println(err)
-	}
+	LookUp(root)
 
 	sort.SliceStable(files, func(i, j int) bool {
 		return files[i].Size < files[j].Size
